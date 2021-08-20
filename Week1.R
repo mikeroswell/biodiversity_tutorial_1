@@ -21,6 +21,20 @@ library(MeanRarity)
 
 # For many problems, it's easier to think about the probability of a and b *not* both happening. What is the formula for this?
 
-# Ok, let's imagine a really simple case. Let's imagine we have a community with two species with equal abundance. What is the probability that if you grabbed two random individuals from this community, they would both be from the same species?
-# compute this with the base R function `dbinom()`
+# Finally, what is the probability of one of two disjoint events (that is, if one happens, the other doesn't), a, and b?
 
+
+# Ok. Now we can think about the probability of selecting two individuals of the same species (where we assume that the only thing affecting which species we see is that species' relative abundance)
+
+# we'll begin with a really simple system, with just two species.
+
+a <- 0.5 #relative abundance of species a
+b <- 1-a # relative abundance of species b
+
+# probability that if we sample two individusls, they will both be "a"
+
+a*a
+
+# what is the probability that both will be "b'?
+
+# what is the probability that both individuals will be the same (i.e., either both a or both b?)
