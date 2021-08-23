@@ -205,9 +205,12 @@ simpson_corrected(test.data$sample_abundance)
 
 # the reciprocal of Simpson's index is commonly used. I like to call this "Hill-Simpson diversity" (We'll dig into Hill diversities). Hill diversities are also known as "effective numbers of species."
 
-# A bunch of people working on biodiversity research, including Jonathan Chase, one of the authors of the paper we're reading for next week, call the reciprocal of Simpson's index (Specificially, I think they usually mean this in terms of the naive estimator) "ENS-PIE." Although this is really confusing terminology, I think the rest of the paper is really clear!
+# A bunch of people working on biodiversity research, including Jonathan Chase, one of the authors of the paper we're reading for next week, call the reciprocal of Simpson's index (Specificially, I think they usually mean this in terms of the naive estimator) "ENS-PIE", for "the Effective Number of Species based on the Probability of Interspecific Encounter" Although this is really verbose, confusing terminology, I think the rest of the paper is really clear!
 
-# As far as I know, no truly unbiased estimator for Hill-Simpson diversity is known. However, plugging in Simpson's estimator works pretty well, and Chao and Jost 2015 proposed some general Hill diversity estimators that have very low bias for Hill-Simpson diversity. Just some context ;-)
+# As far as I know, no truly unbiased estimator for Hill-Simpson diversity is known. However, plugging in Simpson's estimator (then taking the reciprocal) works pretty well, and Chao and Jost 2015 proposed some general Hill diversity estimators that have very low bias for Hill-Simpson diversity.
 
+###########################
+### THE END ###############
+###########################
 
 
