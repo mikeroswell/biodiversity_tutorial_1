@@ -7,7 +7,7 @@
 ###########################################################
 
 # Always good to list packages at the top
-# I'll load the required packages with `library()` which returns an error if you haven't installed the package already. Most R packages are on CRAN and can be downloded and installed with `install.packages()` (and an internet connection!) #See below for an example
+# I'll load the required packages with `library()` which returns an error if you haven't installed the package already. Most R packages are on CRAN and can be downloaded and installed with `install.packages()` (and an internet connection!) #See below for an example
 
 library(ggplot2) #if you don't have ggplot2 installed, I'd recommend just uncommenting and running
 # install.packages("tidyverse")
@@ -36,7 +36,7 @@ library(purrr)
 a <- 0.5 #relative abundance of species a
 b <- 1-a # relative abundance of species b
 
-# probability that if we sample two individusls, they will both be "a"
+# probability that if we sample two individuals, they will both be "a"
 
 a*a
 
@@ -98,9 +98,9 @@ simpson(test.data$abundance)
 
 # Side note: What does the function set.seed() do in R? What might it do for us here?
 
-# Simpson was concerned about estimating the diveristy of a whole community based on a sample from it. What if we pretend that test.data represents our community. let's sample from it
+# Simpson was concerned about estimating the divesity of a whole community based on a sample from it. What if we pretend that test.data represents our community. Let's sample from it
 
-# here's a function from an R package I'm working on that uses R's sample command to do this. Of course in the R package I've had to say what all the things in here do. If you're curious, I invite you to comment this further! And if you're a programming/R/C++ guru and see an easy way to make this way more effecient, let me know and maybe we can find some fun collaborations.
+# here's a function from an R package I'm working on that uses R's sample command to do this. Of course in the R package I've had to say what all the things in here do. If you're curious, I invite you to comment this further! And if you're a programming/R/C++ guru and see an easy way to make this way more efficient, let me know and maybe we can find some fun collaborations.
 
 sample_finite <- function(ab, size = sum(ab)){
   inds <- unlist(lapply(1:length(ab), function(x){
