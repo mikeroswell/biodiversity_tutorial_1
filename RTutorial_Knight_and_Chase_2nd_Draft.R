@@ -377,9 +377,12 @@ y2 <- experimental
 # visually 'striking'.
 
 plotter <- function(contr, exp, sac_plot = TRUE, title){
+  # avoid "exp" and other named functions as variable names
   if(sac_plot == TRUE){
 
-    plot(x, y1$sac.richness, ylim = c(0, 50), col = "blue", pch = 17, xlab = "Log(Number of Quadrats)", ylab = "Species Richness", main = title)
+    plot(x, y1$sac.richness, ylim = c(0, 50), col = "blue"
+         , pch = 17, xlab = "Log(Number of Quadrats)", ylab = "Species Richness"
+         , main = title)
     points(x, contr, col = "blue", pch = 17)
     points(x, y2$sac.richness,  col = "red", pch = 15)
     points(x, exp, col = "red", pch = 15)
@@ -393,6 +396,7 @@ plotter <- function(contr, exp, sac_plot = TRUE, title){
     points(x, treatment_PIE, col = "red", pch = 15)
 
   } ########### I'm still having trouble with the log ratio effect ENS displaying weird results, hence the wide x-axis span. This is really the last thing I'd like to clean up/troubleshoot. Otherwise I'm feeling pretty good about where things sit.
+  # I think you're not actually taking the log of x!
 
 }
 
@@ -400,7 +404,9 @@ plotter <- function(contr, exp, sac_plot = TRUE, title){
 # Plot group 1: Species Accumulation Curves
 SAC_plot.par <- par(mfrow=c(2, 2))
 
-ya1 <- control_a$sac.richness
+ya1 <- control_a$sac.richness # To my eye this is clunky.
+# You already have a plotter function so why keep renaming things
+# instead of just feeding them to your function?
 ya2 <- experimental_a$sac.richness
 plotter(ya1, ya2, title = "Treatment A")
 
@@ -423,7 +429,7 @@ par(SAC_plot.par)
 
 # Plot group 2: log ratio effect size for ENS_PIE and sampling scale
 
-PIE_plot.par <- par(mfrow=c(2, 2))
+PIE_plot.par <- par(mfrow=c(2, 2)) #nice!
 ya1 <- control_a$ENS_PIE
 ya2 <- experimental_a$ENS_PIE
 plotter(ya1, ya2, FALSE, "Treatment A")
