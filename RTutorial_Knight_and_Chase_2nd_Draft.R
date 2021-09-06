@@ -67,7 +67,9 @@ sad_lnorm <- sim_sad(s_pool = 10 # number of species
 
 # Here we will add spatially random coordinates to our SAD, in a grid space of 2 x 2
 practice_sad_coords <- sim_poisson_coords(sad_lnorm, xrange = c(0, 2), yrange = c(0,2))
-# Alternately, here we will introduce interspecies aggregation for a different resultant community landscape. We will similarly place our (now aggregated) SAD over a grid space of 2 x 2
+# Alternately, here we will introduce interspecies aggregation for a different
+# resultant community landscape. We will similarly place our (now aggregated)
+# SAD over a grid space of 2 x 2
 practice_sad_coords_agg <- sim_thomas_coords(sad_lnorm, xrange = c(0, 2), yrange = c(0, 2))
 
 
