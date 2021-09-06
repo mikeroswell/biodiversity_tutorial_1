@@ -336,7 +336,7 @@ experimental <- run_loop(s_pool_input_treatment = 30, loop = 10)
 # Run Simulations:
 
 # Treatment a - Reduce individuals by 50%
-control_a <- run_loop(n_sim_input_treatment = 14440, loop = 10)
+control_a <- run_loop(n_sim_input_treatment = 14440, loop = 10) # In the MS, isn't control always identical?
 experimental_a <- run_loop(s_pool_input_treatment = 30, n_sim_input_treatment = 14440, loop = 10)
 
 # Treatment b - Reduce SAD, and add rare species to the community
@@ -365,7 +365,7 @@ experimental_d <- run_loop(s_pool_input_treatment = 30, agg_treatment = TRUE, lo
 # wanted to make our code more 'general'? It's OKAY if you don't know what
 # 'global' or 'local' mean, but try to figure it out from context if you can.
 
-x <- log(1:361)
+x <- 1:361
 y1 <- control
 y2 <- experimental
 
@@ -379,8 +379,8 @@ y2 <- experimental
 plotter <- function(contr, exp, sac_plot = TRUE, title){
   # avoid "exp" and other named functions as variable names
   if(sac_plot == TRUE){
-
     plot(x, y1$sac.richness, ylim = c(0, 50), col = "blue"
+         # why plot y1 at all (don't you want "contr" and whatever you choose to replace "exp"?)
          , pch = 17, xlab = "Log(Number of Quadrats)", ylab = "Species Richness"
          , main = title)
     points(x, contr, col = "blue", pch = 17)
@@ -412,11 +412,12 @@ plotter(ya1, ya2, title = "Treatment A")
 
 yb1 <- control_b$sac.richness
 yb2 <- experimental_b$sac.richness
-plotter(yb1, yb2, title = "Treatment B")
+plotter(yb1, yb2, title = "Treatment B") # looks like it has two lines now?
+# I think your plotter function always plots treatment "A".
 
 yc1 <- control_c$sac.richness
 yc2 <- experimental_c$sac.richness
-plotter(yc1, yc2, title = "Treatment C")
+plotter(yc1, yc2, title = "Treatment C") # why so many lines?
 
 yd1 <- control_d$sac.richness
 yd2 <- experimental_d$sac.richness
