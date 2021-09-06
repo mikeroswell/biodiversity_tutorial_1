@@ -23,6 +23,9 @@ library(mobsim)
 library(mobr)
 library(vegan)
 
+# some bulky functions
+source("ChaseKnight_helper.R")
+
 
 # First we will simulate a SAD (Species Abundance Distribution) with an upper
 # bound of 10 species in the species pool, 320 individuals, a log-normal
@@ -184,109 +187,53 @@ treatment <- function(s_pool_input = 45
   # of a better approach? If so, please share!
 
   if(agg == TRUE){
-    sad_coords_agg <- sim_thomas_coords(abund_vec = sad_lnorm
+    sad_coords <- sim_thomas_coords(abund_vec = sad_lnorm
                                         , xrange = c(0, 19), yrange = c(0, 19))
     # A 19 x 19 coordinate space will give us 361 quadrats, very close to the
     # 360 mentioned in the paper
 
-    # Now to sample our community...
-    sample_data_agg <- sample_quadrats(sad_coords_agg,
-                                   n_quadrats = 361,
-                                   quadrat_area = 1,
-                                   plot = FALSE, # Why did we set plot = FALSE this time?
-                                   method = "grid",
-                                   x0 = 0,
-                                   y0 = 0,
-                                   delta_x = 1,
-                                   delta_y = 1)
-    return(sample_data_agg)
+
+  }
+  else{
 
     # We will now repeat the same steps for the 'else' portion of our
-    # conditional, but with a non-aggregated community. Can you think of a way
-    # to re-write this using fewer lines of code?
-
-    # MR: I think again, there's so much going on w.r.t. the simulation that
-    # this is going to be distracting. But, you might (now that you observed
-    # some inefficiency) do the cleanup yourself.
-  }else{
+    # conditional, but with a non-aggregated community.
     sad_coords <- sim_poisson_coords(abund_vec = sad_lnorm,
                                      xrange = c(0, 19),
                                      yrange = c(0, 19))
 
-    sample_data <- sample_quadrats(sad_coords,
-                                   n_quadrats = 361,
-                                   quadrat_area = 1,
-                                   plot = FALSE,
-                                   method = "grid",
-                                   x0 = 0,
-                                   y0 = 0,
-                                   delta_x = 1,
-                                   delta_y = 1)
-    return(sample_data)
+
   }
 
+  sample_data <- sample_quadrats(sad_coords,
+                                 n_quadrats = 361,
+                                 quadrat_area = 1,
+                                 plot = FALSE,
+                                 method = "grid",
+                                 x0 = 0,
+                                 y0 = 0,
+                                 delta_x = 1,
+                                 delta_y = 1)
+
+  return(sample_data)
 
 }
+
 
 ###############################################
 ## Checkpoint 2 ###############################
 ###############################################
 
-# We need to write a function that calculates a cumulative of species sampled.
-# Currently, `mobsim::calc_PIE` calculates each quadrat individually. We need to
-# write a function that computes ENS_PIE for each _collection_ of quadrats.
-
-ens_PIE <- function(community_data){
-
-  # First we're going to see how many plots are in the community data.frame. We will use this to determine how long we want our ENS_PIE vector to be, and how many times we need to repeat our calculation of the ENS_PIE metric.
-  rows <- nrow(community_data)
-  ens_PIE_value <- vector(length = rows)
-  species_data <- community_data[1,]
-  ens_PIE_value[1] <- calc_PIE(species_data, ENS = TRUE)
-
-  for(i in 2:rows){
-
-    # Here is where we diverge from the function as it was written. We are now
-    # looping through the community dataset, making a cumulative count of the
-    # species in the dataset that increases with respect to area/quadrat #. This
-    # approximates but is not exactly the same as the "nested" sampling in the
-    # paper. We then calculate the ENS_PIE metric on this cumulative dataset and
-    # return the list that contains these values.
-    species_data <- species_data + community_data[i,]
-    ens_PIE_value[i] <- calc_PIE(species_data, ENS = TRUE)
-
-    }
-
-  return(ens_PIE_value)
-
-}
 
 
-###############################################
-## Checkpoint 3 ###############################
-###############################################
-
-# We've now written two functions! One that makes it really easy to quickly
-# simulate communities with different initial conditions, and a second that
-# calculates the ENS_PIE metric that respects a cumulative counting of both
-# individuals sampled and area sampled. Our next step will be to write a
+# We've now written a function that makes it easy to quickly
+# simulate communities with different initial conditions, Our next step will be to write a
 # function that allows us to easily set our initial conditions and run that
 # simulation many times.
 
-# We are re-stating the 'default' conditions that we established in our earlier
-# function 'treatment' with the exception of one new one, 'loop.' What would be
-# the consequences of not restating these default conditions? What is the logic
-# for setting loop to default to '1'?
-
-# Hint 1: Think about how 'line 168' might run if we did not restate the
-# 'default' conditions. Hint 2: Think about what might happen if we set the
-# default of 'loop' to 10000 repetitions and forgot to change it at a later
-# point.
-
-# MR Sorry to mess up line reference.
 run_loop <- function(s_pool_input_treatment = 45,
                      n_sim_input_treatment = 28880, # this is a weird number, where does it come from?
-                     cv_abund_input_treatment = 0.9,
+                     cv_abund_input_treatment = 0.5,
                      agg_treatment = FALSE,
                      loop = 1){
 
@@ -312,8 +259,8 @@ run_loop <- function(s_pool_input_treatment = 45,
 
   }
 
-  sac$richness <- sac$richness / (loop)
-  ENS_PIE <- ENS_PIE / (loop)
+  sac$richness <- sac$richness / (loop) # take average, richness already summed across iterations
+  ENS_PIE <- ENS_PIE / (loop) # take average
 
   results <- data.frame(sac$richness, ENS_PIE)
 
@@ -330,29 +277,29 @@ run_loop <- function(s_pool_input_treatment = 45,
 # again, focus on the ecological stuff rather than the programming stuff.
 
 # Baseline - Pre-treatment
-control <- run_loop(loop = 10)
-experimental <- run_loop(s_pool_input_treatment = 30, loop = 10)
+control_45 <- run_loop(loop = 10)
+control_30 <- run_loop(s_pool_input_treatment = 30, loop = 10)
 
 # Run Simulations:
 
 # Treatment a - Reduce individuals by 50%
-control_a <- run_loop(n_sim_input_treatment = 14440, loop = 10) # In the MS, isn't control always identical?
-experimental_a <- run_loop(s_pool_input_treatment = 30, n_sim_input_treatment = 14440, loop = 10)
+reduce_density_45 <- run_loop(n_sim_input_treatment = 14440, loop = 10) # In the MS, isn't control always identical?
+reduce_density_30 <- run_loop(s_pool_input_treatment = 30, n_sim_input_treatment = 14440, loop = 10)
 
-# Treatment b - Reduce SAD, and add rare species to the community
-control_b <- run_loop(cv_abund_input_treatment = 10, loop = 10)
-experimental_b <- run_loop(s_pool_input_treatment = 30, cv_abund_input_treatment = 10, loop = 10)
+# Treatment b - Reduce evenness; now there are very rare species in the community
+uneven_45 <- run_loop(cv_abund_input_treatment = 1, loop = 10) # MR: I modified this from 10 to 1
+uneven_30 <- run_loop(s_pool_input_treatment = 30, cv_abund_input_treatment = 1, loop = 10)
 
-# Treatment c - Dramaticaly reduce the SAD, and make the community highly uneven
-control_c <- run_loop(cv_abund_input_treatment = 100, loop = 10)
-experimental_c <- run_loop(s_pool_input_treatment = 30, cv_abund_input_treatment = 100, loop = 10)
+# Treatment c - Dramatically reduce evenness
+dramatic_45 <- run_loop(cv_abund_input_treatment = 10, loop = 10)
+dramatic_30 <- run_loop(s_pool_input_treatment = 30, cv_abund_input_treatment = 10, loop = 10)
 
 # Treatment d - Introduce interspecies aggregation into the community
-control_d <- run_loop(agg_treatment = TRUE, loop = 10)
-experimental_d <- run_loop(s_pool_input_treatment = 30, agg_treatment = TRUE, loop = 10)
+agg_45 <- run_loop(agg_treatment = TRUE, loop = 10)
+agg_30<- run_loop(s_pool_input_treatment = 30, agg_treatment = TRUE, loop = 10)
 
 ###############################################
-## Checkpoint 4 ###############################
+## Checkpoint 3 ###############################
 ###############################################
 # Now to top it all off, let's turn our data into some pretty graphs! Since we
 # have a lot of data to visually represent, let's make a function that
@@ -366,9 +313,6 @@ experimental_d <- run_loop(s_pool_input_treatment = 30, agg_treatment = TRUE, lo
 # 'global' or 'local' mean, but try to figure it out from context if you can.
 
 x <- 1:361
-y1 <- control
-y2 <- experimental
-
 
 # The rest of this function is fairly straightforward. We will be using a
 # conditional to determine if we want to plot a SAC or the "log ratio effect
@@ -376,81 +320,62 @@ y2 <- experimental
 # our control and experimental treatments differently to make our results more
 # visually 'striking'.
 
-plotter <- function(contr, exp, sac_plot = TRUE, title){
-  # avoid "exp" and other named functions as variable names
-  if(sac_plot == TRUE){
-    plot(x, y1$sac.richness, ylim = c(0, 50), col = "blue"
-         # why plot y1 at all (don't you want "contr" and whatever you choose to replace "exp"?)
-         , pch = 17, xlab = "Log(Number of Quadrats)", ylab = "Species Richness"
-         , main = title)
-    points(x, contr, col = "blue", pch = 17)
-    points(x, y2$sac.richness,  col = "red", pch = 15)
-    points(x, exp, col = "red", pch = 15)
-
-
-  }else{
-
-    y_PIE <- log(y1$ENS_PIE) - log(contr)
-    treatment_PIE <- log(y2$ENS_PIE) - log(exp)
-    plot(x, y_PIE, ylim = c(-0.5, 3), col = "blue", pch = 17, xlab = "Log(Number of Quadrats)", ylab = "Log Ratio Effect Size", main = title)
-    points(x, treatment_PIE, col = "red", pch = 15)
-
-  } ########### I'm still having trouble with the log ratio effect ENS displaying weird results, hence the wide x-axis span. This is really the last thing I'd like to clean up/troubleshoot. Otherwise I'm feeling pretty good about where things sit.
-  # I think you're not actually taking the log of x!
-
-}
 
 # NOTE: Run the two plot groups separately if you plan to copy-paste the code.
 # Plot group 1: Species Accumulation Curves
 SAC_plot.par <- par(mfrow=c(2, 2))
 
-ya1 <- control_a$sac.richness # To my eye this is clunky.
-# You already have a plotter function so why keep renaming things
-# instead of just feeding them to your function?
-ya2 <- experimental_a$sac.richness
-plotter(ya1, ya2, title = "Treatment A")
+# effect of reducing density
+plotter(control_45
+        , reduce_density_45
+        , x = x
+        , meth = "accum", metric = "rich", title = "density reduction, 45 spp")
 
-yb1 <- control_b$sac.richness
-yb2 <- experimental_b$sac.richness
-plotter(yb1, yb2, title = "Treatment B") # looks like it has two lines now?
-# I think your plotter function always plots treatment "A".
+plotter(control_45
+        , reduce_density_45
+        , x = x
+        , meth = "effect", metric = "rich", title = "density reduction, 45 spp")
 
-yc1 <- control_c$sac.richness
-yc2 <- experimental_c$sac.richness
-plotter(yc1, yc2, title = "Treatment C") # why so many lines?
+plotter(control_45
+        , reduce_density_45
+        , x = x
+        , meth = "accum"
+        , metric = "ENS_PIE", title = "density reduction, 45 spp")
 
-yd1 <- control_d$sac.richness
-yd2 <- experimental_d$sac.richness
-plotter(yd1, yd2, title = "Treatment D")
+plotter(control_45, reduce_density_45,
+        x = x,
+        meth = "effect"
+        , metric = "ENS_PIE"
+        , title ="density reduction, 45 spp")
 
-legend("bottomright", inset = .01, legend=c("Control", "Experimental"),
-       col=c("blue", "red"), pch = c(17, 15),
-       box.lty=0)
-par(SAC_plot.par)
 
-# Plot group 2: log ratio effect size for ENS_PIE and sampling scale
+# effect of intraspecific aggregation
+plotter(control_45
+        , agg_45
+        , x = x
+        , meth = "accum", metric = "rich", title = "density reduction, 45 spp")
 
-PIE_plot.par <- par(mfrow=c(2, 2)) #nice!
-ya1 <- control_a$ENS_PIE
-ya2 <- experimental_a$ENS_PIE
-plotter(ya1, ya2, FALSE, "Treatment A")
+# y-axis truncated
 
-yb1 <- control_b$ENS_PIE
-yb2 <- experimental_b$ENS_PIE
-plotter(yb1, yb2, FALSE, "Treatment B") ####### I'm unclear why there is a substantial gap between the "control" group and the "experimental" group. Additionally, why these numbers are so different from those reached in the paper.
+plotter(control_45
+        , agg_45
+        , x = x
+        , meth = "effect", metric = "rich", title = "density reduction, 45 spp")
 
-yc1 <- control_c$ENS_PIE
-yc2 <- experimental_c$ENS_PIE
-plotter(yc1, yc2, FALSE, "Treatment C") ####### Similar to above, but gap between control and experimental seems to be smaller. The overall pattern of ENS_PIE being inversely related to community evenness decreases holds, which I suppose is the most important thing.
+plotter(control_45
+        , agg_45
+        , x = x
+        , meth = "accum"
+        , metric = "ENS_PIE", title = "density reduction, 45 spp")
 
-yd1 <- control_d$ENS_PIE
-yd2 <- experimental_d$ENS_PIE
-plotter(yd1, yd2, FALSE, "Treatment D") ####### This last one is especially weird. It seems to follow an exponential decay curve instead of how the paper's curve drops off... Thoughts?
+# y-axis truncated
+plotter(control_45
+        , agg_45,
+        x = x,
+        meth = "effect"
+        , metric = "ENS_PIE"
+        , title ="density reduction, 45 spp")
 
-legend("topright", inset = .01, legend=c("Control", "Treatment"),
-       col=c("blue", "red"), pch = c(17, 15),
-       box.lty=0)
-par(PIE_plot.par)
 
 ##----------------------------------------------------------
 
